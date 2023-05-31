@@ -186,7 +186,7 @@ import torch
 from transformers import AutoModelForCausalLM, AutoTokenizer
 
 tokenizer = AutoTokenizer.from_pretrained("databricks/dolly-v2-3b", padding_side="left")
-print("Loaded tokenizer")
+print("LOaded tokenizer")
 model = AutoModelForCausalLM.from_pretrained("databricks/dolly-v2-3b", 
                                              device_map="auto",
                                              torch_dtype=torch.bfloat16)
@@ -197,7 +197,7 @@ from datasets import load_dataset
 
 data = load_dataset("json", 
                     data_files="./AlpacaDataCleaned/alpaca_data.json")
-print("now got data")
+
 def generate_prompt(data_point):
     # taken from https://github.com/tloen/alpaca-lora
     if data_point["instruction"]:
@@ -241,7 +241,7 @@ from peft import prepare_model_for_int8_training, LoraConfig, get_peft_model
 
 # Settings for A100 - For 3090 
 MICRO_BATCH_SIZE = 2  # change to 4 for 3090
-BATCH_SIZE = 64
+BATCH_SIZE = 10
 GRADIENT_ACCUMULATION_STEPS = BATCH_SIZE // MICRO_BATCH_SIZE
 EPOCHS = 2  # paper uses 3
 LEARNING_RATE = 2e-5  
@@ -249,7 +249,7 @@ CUTOFF_LEN = 256
 LORA_R = 4
 LORA_ALPHA = 16
 LORA_DROPOUT = 0.05
-print("now start the LoRA bit")
+
 model = prepare_model_for_int8_training(model, 
                                         use_gradient_checkpointing=True)
 
@@ -274,7 +274,7 @@ data = data.shuffle().map(
     )
 )
 
-print("Now start the training")
+data
 
 trainer = transformers.Trainer(
     model=model,
@@ -292,10 +292,9 @@ trainer = transformers.Trainer(
     ),
     data_collator=transformers.DataCollatorForLanguageModeling(tokenizer, mlm=False),
 )
-print("Finished trainer init")
 model.config.use_cache = False
 trainer.train(resume_from_checkpoint=False)
-print("Now finished training")
+
 model.save_pretrained("alpaca-lora-dolly-2.0")
 
 generate_text = InstructionTextGenerationPipeline(model=model, tokenizer=tokenizer)

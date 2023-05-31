@@ -1,0 +1,3 @@
+nohup: ignoring input
+HELLO, STARTING NOW
+Loaded tokenizer
